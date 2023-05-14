@@ -47,10 +47,11 @@ public:
 	UFUNCTION()
 		void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Projectile Properties")
+		int32 Damage;
 
-// Add this property to the AAbilityActor class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
-		UParticleSystem* HitEmitter;
+	UParticleSystem* HitEmitter;
 
 private:
 	int32 ImpactCounter;

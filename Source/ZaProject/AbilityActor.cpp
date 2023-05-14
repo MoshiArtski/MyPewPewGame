@@ -73,7 +73,6 @@ void AAbilityActor::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* O
 	UPlayerStats* OtherPlayerStats = OtherActor->FindComponentByClass<UPlayerStats>();
 	if (OtherPlayerStats)
 	{
-		int Damage = 20;
 		OtherPlayerStats->TakeDamage(Damage, GetOwner()->GetInstigatorController(), GetOwner());
 	}
 	

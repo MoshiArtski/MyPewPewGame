@@ -57,6 +57,7 @@ AZaProjectCharacter::AZaProjectCharacter()
 
 	PlayerStats = CreateDefaultSubobject<UPlayerStats>(TEXT("PlayerStats"));
 	PlayerStats->RegisterComponent();
+
 }
 
 void AZaProjectCharacter::BeginPlay()
@@ -72,7 +73,9 @@ void AZaProjectCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -91,6 +94,18 @@ void AZaProjectCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Look);
+	
+		// AutoAttack
+		EnhancedInputComponent->BindAction(AutoAttackAction, ETriggerEvent::Triggered, this, &AZaProjectCharacter::AutoAttack);
+
+		// Blocking
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Block);
+
+		// Abilities
+		EnhancedInputComponent->BindAction(Ability1Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability1);
+		EnhancedInputComponent->BindAction(Ability2Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability2);
+		EnhancedInputComponent->BindAction(Ability3Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability3);
+		EnhancedInputComponent->BindAction(Ability4Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability4);
 	}
 
 }
@@ -131,6 +146,56 @@ void AZaProjectCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void AZaProjectCharacter::AutoAttack(const FInputActionValue& Value)
+{
+}
 
+void AZaProjectCharacter::Block(const FInputActionValue& Value)
+{
+}
+
+void AZaProjectCharacter::Ability1(const FInputActionValue& Value)
+{
+}
+
+void AZaProjectCharacter::Ability2(const FInputActionValue& Value)
+{
+}
+
+void AZaProjectCharacter::Ability3(const FInputActionValue& Value)
+{
+}
+
+void AZaProjectCharacter::Ability4(const FInputActionValue& Value)
+{
+}
+
+void AZaProjectCharacter::DisableCharacterInput()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->SetComponentTickEnabled(false);
+	}
+
+	// Disable input for player controller
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->DisableInput(PlayerController);
+	}
+}
+
+void AZaProjectCharacter::EnableCharacterInput()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->SetComponentTickEnabled(true);
+	}
+
+	// Enable input for player controller
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->EnableInput(PlayerController);
+	}
+}
 
 

@@ -115,19 +115,33 @@ protected:
 	FTimerHandle StaminaRegenTimerHandle;
 
 	// Types
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	EType Type1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	EType Type2;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat Info")
+	UPROPERTY(BlueprintReadOnly, Category = "Stat Info")
 	UDataTable* StatInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes", meta = (ShowOnlyInnerProperties))
 	FCharacterStats CharacterStats;
 
-	bool IsLocallyControlledPawn();
+	//Other Stats 
+	UPROPERTY(Replicated)
+	int32 Aura;
+
+	UPROPERTY(Replicated)
+	int32 AuraDefense;
+
+	UPROPERTY(Replicated)
+	int32 Defense;
+
+	UPROPERTY(Replicated)
+	int32 Weight;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	int32 Speed;
 
 	// Getters and Setters
 
@@ -142,6 +156,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetCurrentHealth(float healthValue);
+
 
 	// Events for taking damage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
@@ -198,4 +213,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void SetIsDamageable(bool NewIsDamageble) {  bIsDamageable = NewIsDamageble; }
+
+	/** Getter for Speed.*/
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	FORCEINLINE float GetSpeed() const { return Speed; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stats")
+	void SetSpeed(float NewSpeed);
+
+private:
+
+	bool IsLocallyControlledPawn();
 };

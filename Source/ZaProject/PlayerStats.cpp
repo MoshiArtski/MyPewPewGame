@@ -4,11 +4,14 @@
 #include "PlayerStats.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
+#include "ZaProjectCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Actor.h"
 
 // Sets default values for this component's properties
 UPlayerStats::UPlayerStats()
 {
+	Speed = 500.0f;
 }
 
 
@@ -25,13 +28,14 @@ void UPlayerStats::BeginPlay()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Row found in data table"));
 
-			// Initialize 
 			MaxHealth = Row->Constitution * 10;
 			CurrentHealth = MaxHealth;
 
 			MaxStamina = Row->Constitution * Row->Aura;
 			CurrentStamina = MaxStamina;
 			StaminaRegenRate = Row->Aura * 10;
+
+			Speed = Row->Speed;
 
 			Type1 = Row->mType1;
 			Type2 = Row->mType2;
@@ -48,11 +52,11 @@ void UPlayerStats::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StatInfo is not assigned"));
 	}
 
-	// Initialize Stamina Regen Timer
 	GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &UPlayerStats::RegenerateStamina, 1.0f, true);
 	bIsDamageable = true;
-}
 
+	SetSpeed(Speed);
+}
 
 
 /******************************** Health Functions ********************************/
@@ -78,11 +82,6 @@ void UPlayerStats::OnHealthUpdate()
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHealth);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 	}
-
-	//Functions that occur on all machines. 
-	/*
-		Any special functionality that should occur as a result of damage or death should be placed here.
-	*/
 }
 
 void UPlayerStats::OnRep_CurrentHealth()
@@ -181,8 +180,6 @@ void UPlayerStats::UseStamina(float staminaAmount)
 	}
 }
 
-
-
 void UPlayerStats::Server_UseStamina_Implementation(float staminaAmount)
 {
 	UseStamina(staminaAmount);
@@ -192,8 +189,6 @@ bool UPlayerStats::Server_UseStamina_Validate(float staminaAmount)
 {
 	return true;
 }
-
-
 
 void UPlayerStats::RegenerateStamina()
 {
@@ -223,6 +218,18 @@ bool UPlayerStats::IsLocallyControlledPawn()
 	return OwnerPawn && OwnerPawn->IsLocallyControlled();
 }
 
+
+void UPlayerStats::SetSpeed(float NewSpeed)
+{
+	Speed = NewSpeed;
+
+
+	AZaProjectCharacter* OwnerCharacter = Cast<AZaProjectCharacter>(GetOwner());
+	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement())
+	{
+		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = Speed;
+	}
+}
 /******************************** Replication Functions ********************************/
 void UPlayerStats::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -230,8 +237,9 @@ void UPlayerStats::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(UPlayerStats, CurrentHealth);
 	DOREPLIFETIME(UPlayerStats, CurrentStamina);
+	DOREPLIFETIME(UPlayerStats, Type1);
+	DOREPLIFETIME(UPlayerStats, Type2);
+	DOREPLIFETIME(UPlayerStats, Aura);
+	DOREPLIFETIME(UPlayerStats, AuraDefense);
+	DOREPLIFETIME(UPlayerStats, Defense);
 }
-
-
-
-

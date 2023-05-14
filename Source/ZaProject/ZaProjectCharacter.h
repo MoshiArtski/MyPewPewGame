@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "PlayerStats.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "ZaProjectCharacter.generated.h"
 
 
@@ -38,9 +39,29 @@ class AZaProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** AutoAttack Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AutoAttackAction;
+
+	/** Block Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* BlockAction;
+
+	/** Ability Actions */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* Ability1Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* Ability2Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* Ability3Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* Ability4Action;
+
 public:
 	AZaProjectCharacter();
-	
 
 protected:
 
@@ -49,7 +70,24 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	/** Called for AutoAttack input */
+	void AutoAttack(const FInputActionValue& Value);
+
+	/** Called for blocking input */
+	void Block(const FInputActionValue& Value);
+
+	/** Called for ability 1 input */
+	void Ability1(const FInputActionValue& Value);
+
+	/** Called for ability 2 input */
+	void Ability2(const FInputActionValue& Value);
+
+	/** Called for ability 3 input */
+	void Ability3(const FInputActionValue& Value);
+
+	/** Called for ability 4 input */
+	void Ability4(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
@@ -57,7 +95,6 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
-
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -67,5 +104,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	class UPlayerStats* PlayerStats;
+
+	UFUNCTION(BlueprintCallable, Category = "Stunned")
+	void EnableCharacterInput();
+
+	UFUNCTION(BlueprintCallable, Category = "Stunned")
+	void DisableCharacterInput();
+
 };
 

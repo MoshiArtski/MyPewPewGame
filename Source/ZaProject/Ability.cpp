@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "StatusEffectsManager.h"
 
 
 UAbility::UAbility()
@@ -22,8 +23,10 @@ void UAbility::BeginPlay()
 	Super::BeginPlay();
 
     Owner = Cast<AZaProjectCharacter>(GetOwner());
+    PlayerStats = Owner->FindComponentByClass<UPlayerStats>();
+    CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
+    SkeletalMeshComponent = Owner->FindComponentByClass<USkeletalMeshComponent>();
 
-    EType AbilityElementType = EType::None;
     EType OwnerType1 = Owner->FindComponentByClass<UPlayerStats>()->GetType1();
     EType OwnerType2 = Owner->FindComponentByClass<UPlayerStats>()->GetType2();
 
@@ -40,6 +43,8 @@ void UAbility::BeginPlay()
 void UAbility::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+
 }
 
 void UAbility::UseAbility_Implementation()
@@ -78,8 +83,6 @@ void UAbility::UseAbility_Implementation()
 
 bool UAbility::UseStamina()
 {
-	UPlayerStats* PlayerStats = Cast<UPlayerStats>(GetOwner()->GetComponentByClass(UPlayerStats::StaticClass()));
-
 	if (PlayerStats && Cost < PlayerStats->GetCurrentStamina())
 	{
 		PlayerStats->UseStamina(Cost);
@@ -96,33 +99,38 @@ void UAbility::HitscanFire()
         return;
     }
 
-    UCameraComponent* CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
     if (!CameraComponent)
     {
         UE_LOG(LogTemp, Error, TEXT("Camera component not found"));
         return;
     }
+    
+    if (!SkeletalMeshComponent)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Skeletal mesh component not found"));
+        return;
+    }
 
-    FVector SpawnLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 20.f;
+    FVector SpawnLocation = SkeletalMeshComponent->GetSocketLocation(AbilityFromSocket) + Owner->GetActorForwardVector() * 20.f;
     FVector SpawnDirection = CameraComponent->GetForwardVector();
     FVector SpawnEnd = SpawnDirection * Range + SpawnLocation;
 
-    // Adding line trace by channel
     FHitResult HitResult;
     FCollisionQueryParams TraceParams;
     TraceParams.AddIgnoredActor(Owner);
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnPhysicalMaterial = true;
 
-    // Perform line trace
     bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, SpawnLocation, SpawnEnd, ECC_Camera, TraceParams);
 
-    // Draw debug line
     FColor DebugLineColor = bHit ? FColor::Red : FColor::Green;
     float DebugLineLifetime = 5.0f;
     uint8 DepthPriority = 0;
     float LineThickness = 2.0f;
     DrawDebugLine(GetWorld(), SpawnLocation, SpawnEnd, DebugLineColor, true, DebugLineLifetime, DepthPriority, LineThickness);
+
+    // Call the function to spawn the beam VFX
+    SpawnHitscanBeamVFX(SpawnLocation, SpawnEnd);
 
     if (bHit)
     {
@@ -141,10 +149,40 @@ void UAbility::HitscanFire()
                 }
 
                 UPlayerStats* OtherPlayerStats = HitResult.GetActor()->FindComponentByClass<UPlayerStats>();
+                UStatusEffectsManager* OtherPlayerStatusEffects = HitResult.GetActor()->FindComponentByClass<UStatusEffectsManager>();
 
                 if (OtherPlayerStats)
                 {
                     OtherPlayerStats->TakeDamage(Damage, GetOwner()->GetInstigatorController(), GetOwner());
+                }
+
+                if (OtherPlayerStatusEffects)
+                {
+                    if (Burns)
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Ability Burns."));
+                        OtherPlayerStatusEffects->HandleBurn(AbilityName, BurnStacks, NumberOfBurnStacks, BurnDamagePerTick, BurnTickDuration, BurnNumberOfTicks);
+                    }
+                    if (Wets)
+                    {
+                        OtherPlayerStatusEffects->AddWetStatusEffect(WetDuration);
+                    }
+                    if (Poisons)
+                    {
+                        OtherPlayerStatusEffects->HandlePoison(AbilityName, PoisonStacks, NumberOfPoisonStacks, PoisonDamagePerTick, PoisonTickDuration, PoisonNumberOfTicks);
+                    }
+                    if (AntiHeals)
+                    {
+                        OtherPlayerStatusEffects->HandleAntihealModifier(AbilityName, AntihealStacks, NumberOfStacks, AntiHealPercentageToAdd, AntiHealsDuration);
+                    }
+                    if (Heals)
+                    {
+                        OtherPlayerStatusEffects->HandleHeal(HealAmountPerTick, HealTickDuration, HealNumberOfTicks);
+                    }
+                    if (SpeedModifier)
+                    {
+                        OtherPlayerStatusEffects->HandleSpeedModifier(AbilityName, SpeedStacks, NumberOfSpeedModStacks, SpeedModifier, SpeedModifierDuration);
+                    }
                 }
             }
     }
@@ -163,21 +201,24 @@ bool UAbility::Server_HitscanFire_Validate()
 }
 
 
-void UAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    // Replicate any relevant properties here
-}
-
-void UAbility::Server_SpawnEmitter_Implementation(FVector SpawnLocation, FRotator Rotation)
+void UAbility::Server_SpawnEmitter_Implementation(const FVector& SpawnLocation, const FRotator& Rotation)
 {
     Multicast_SpawnEmitter(SpawnLocation, Rotation);
 }
 
-bool UAbility::Server_SpawnEmitter_Validate(FVector SpawnLocation, FRotator Rotation)
+bool UAbility::Server_SpawnEmitter_Validate(const FVector& SpawnLocation, const FRotator& Rotation)
 {
     return true;
 }
+
+void UAbility::SpawnHitscanBeamVFX(const FVector& Start, const FVector& End)
+{
+    if (HitscanBeamVFX)
+    {
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitscanBeamVFX, Start, FRotator::ZeroRotator, FVector::OneVector, true, EPSCPoolMethod::None, true);
+    }
+}
+
 
 void UAbility::Multicast_SpawnEmitter_Implementation(FVector SpawnLocation, FRotator Rotation)
 {
@@ -204,14 +245,20 @@ void UAbility::ProjectileFire()
         return;
     }
 
-    UCameraComponent* CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
     if (!CameraComponent)
     {
         UE_LOG(LogTemp, Error, TEXT("Camera component not found"));
         return;
     }
 
-    FVector SpawnLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 20.f;
+    USkeletalMeshComponent* SkeletalMeshComponent = Owner->FindComponentByClass<USkeletalMeshComponent>();
+    if (!SkeletalMeshComponent)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Skeletal mesh component not found"));
+        return;
+    }
+
+    FVector SpawnLocation = SkeletalMeshComponent->GetSocketLocation(AbilityFromSocket) + Owner->GetActorForwardVector() * 20.f;
     FVector SpawnDirection = CameraComponent->GetForwardVector();
 
     // Spawn the projectile
@@ -228,10 +275,17 @@ void UAbility::ProjectileFire()
         return;
     }
 
+    Projectile->Damage = Damage;
+
     UPrimitiveComponent* ProjectileCollision = Projectile->FindComponentByClass<UPrimitiveComponent>();
     if (ProjectileCollision)
     {
-        ProjectileCollision->MoveIgnoreActors.Add(GetOwner());
-        UE_LOG(LogTemp, Error, TEXT("Projectile Collision does not exist."));
+        //ProjectileCollision->MoveIgnoreActors.Add(GetOwner());
     }
+}
+
+// Replicate any relevant properties here
+void UAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
