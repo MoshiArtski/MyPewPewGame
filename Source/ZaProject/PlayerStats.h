@@ -88,7 +88,7 @@ public:
 protected:
 
 	//Health
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UPROPERTY( BlueprintReadOnly, Category = "Attributes")
 	float MaxHealth;
 
 
@@ -101,7 +101,7 @@ protected:
 	void OnHealthUpdate();
 
 	// Stamina
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	float MaxStamina;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentStamina)
@@ -115,16 +115,16 @@ protected:
 	FTimerHandle StaminaRegenTimerHandle;
 
 	// Types
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Attributes")
 	EType Type1;
 
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Attributes")
 	EType Type2;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Stat Info")
 	UDataTable* StatInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes", meta = (ShowOnlyInnerProperties))
+	UPROPERTY( BlueprintReadOnly, Category = "Attributes", meta = (ShowOnlyInnerProperties))
 	FCharacterStats CharacterStats;
 
 	//Other Stats 
@@ -140,7 +140,7 @@ protected:
 	UPROPERTY(Replicated)
 	int32 Weight;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Stats")
 	int32 Speed;
 
 	// Getters and Setters
