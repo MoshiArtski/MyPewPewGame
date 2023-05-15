@@ -53,11 +53,7 @@ AZaProjectCharacter::AZaProjectCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-
-	PlayerStats = CreateDefaultSubobject<UPlayerStats>(TEXT("PlayerStats"));
-	PlayerStats->RegisterComponent();
-
+	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++);
 }
 
 void AZaProjectCharacter::BeginPlay()
@@ -107,7 +103,6 @@ void AZaProjectCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(Ability3Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability3);
 		EnhancedInputComponent->BindAction(Ability4Action, ETriggerEvent::Triggered, this, &AZaProjectCharacter::Ability4);
 	}
-
 }
 
 void AZaProjectCharacter::Move(const FInputActionValue& Value)

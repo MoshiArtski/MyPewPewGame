@@ -212,5 +212,5 @@ private:
 	AZaProjectCharacter* Owner;
 	UPlayerStats* PlayerStats;
 	UCameraComponent* CameraComponent;
-	USkeletalMeshComponent* SkeletalMeshComponent
+	USkeletalMeshComponent* SkeletalMeshComponent;
 };

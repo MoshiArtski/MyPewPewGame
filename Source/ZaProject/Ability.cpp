@@ -219,8 +219,7 @@ void UAbility::SpawnHitscanBeamVFX(const FVector& Start, const FVector& End)
     }
 }
 
-
-void UAbility::Multicast_SpawnEmitter_Implementation(FVector SpawnLocation, FRotator Rotation)
+void UAbility::Multicast_SpawnEmitter_Implementation(const FVector& SpawnLocation, const FRotator& Rotation)
 {
     UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEmitter, SpawnLocation, Rotation);
 }
@@ -251,7 +250,6 @@ void UAbility::ProjectileFire()
         return;
     }
 
-    USkeletalMeshComponent* SkeletalMeshComponent = Owner->FindComponentByClass<USkeletalMeshComponent>();
     if (!SkeletalMeshComponent)
     {
         UE_LOG(LogTemp, Error, TEXT("Skeletal mesh component not found"));
