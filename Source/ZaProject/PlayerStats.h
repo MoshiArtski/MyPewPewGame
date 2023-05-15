@@ -121,7 +121,7 @@ protected:
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	EType Type2;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Stat Info")
+	UPROPERTY(EditDefaultsOnly, Category = "Stat Info")
 	UDataTable* StatInfo;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes", meta = (ShowOnlyInnerProperties))

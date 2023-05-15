@@ -13,7 +13,10 @@ void UStatusEffectsManager::BeginPlay()
 
     Owner = GetOwner();
 	PlayerStats = Owner->FindComponentByClass<UPlayerStats>();
+	if(PlayerStats)
+	{ 
 	OriginalSpeed = PlayerStats->GetSpeed();
+    }
 }
 
 void UStatusEffectsManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
